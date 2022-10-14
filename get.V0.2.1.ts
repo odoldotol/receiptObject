@@ -1,7 +1,6 @@
 // version 0.2.1
 
 // 구굴 비젼 API 의 "TEXT_DETECTION", "DOCUMENT_TEXT_DETECTION" 기능을 포함한 annotateResult: [google.cloud.vision.v1.IAnnotateImageResponse] 로부터 데이터를 얻습니다.
-// 인자 annotateResult 는 googleVisionAnnoPipe/inspector.V0.0.1 를 통해 검증되어야 합니다.
 // Receipt Object Define Version = 0.1.1
 
 // 영수증의 구조분석과 요소간 상대적 위치를 기준으로 텍스트요소들을 찾아내는 솔루션입니다.
@@ -53,22 +52,26 @@
  * taxSummary 로 부터 어느정도 보정,정확도향상 기대됨
  */
 
+import { google } from '@google-cloud/vision/build/protos/protos';
 import { MultipartBodyDto } from 'src/recipt-to-sheet/dto/multipartBody.dto';
 import { Receipt } from './define.V0.1.1';
+import googleVisionAnnoInspectorPipe from './googleVisionAnnoPipe/inspector.V0.0.1';
+
+
 /**
  * 
  */
 export = function(
-    annotateResult: {textAnnotations, fullTextAnnotationPlusStudy, failures},
+    annoRes: google.cloud.vision.v1.IAnnotateImageResponse,
     multipartBody: MultipartBodyDto,
     imageUri?: string
 ): {
     receipt: Receipt,
     failures: any[],
-    permits: {items, receiptInfo, shopInfo, taxSummary}
+    permits: {items, receiptInfo, shopInfo, taxSummary, amountSummary}
 } {
 
-    const {textAnnotations, fullTextAnnotationPlusStudy, failures} = annotateResult;
+    const {textAnnotations, fullTextAnnotationPlusStudy, failures} = googleVisionAnnoInspectorPipe(annoRes);
     const {emailAddress, receiptStyle} = multipartBody
 
     //
@@ -1189,7 +1192,8 @@ function deleteAllNotNumberEachEleInArr(arr) {
 /**
  * #### 영수증 정보(시간, TM, NO) 찾기
  * 
- * 일단은 시간정보만 처리함
+ * - 일단은 시간정보만 처리함
+ * - 타임존 보정
  */
 function getReceiptInfoFromGroup(receiptInfoGroup) {
     let date = null
@@ -1213,7 +1217,10 @@ function getReceiptInfoFromGroup(receiptInfoGroup) {
             break
         }
     }
-    const receiptDate = new Date(date[0]+" "+time[0])
+    let receiptDate = new Date(date[0]+" "+time[0])
+    if (receiptDate.getTimezoneOffset() !== -540) {
+        receiptDate = new Date(receiptDate.getTime() - ((receiptDate.getTimezoneOffset() + 540) * 60 * 1000))
+    };
     // const receiptTm = tm[0].slice(3)
     // const receiptNo = no[0].slice(3)
     return {receiptDate/*, receiptTm, receiptNo*/}

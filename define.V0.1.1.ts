@@ -1,3 +1,9 @@
+/* 사용처
+receipt스키마
+get
+receipt-to-sheet.service
+*/
+
 // 영수증 객체
 class Receipt {
 
@@ -298,7 +304,7 @@ class Receipt {
             public requestDate: Date,
             public sheetFormat: string,
             public emailAddress: string,
-            public requestType: 'provided'|'general',
+            public requestType: 'provided'|'devUpdated'|'general',
         ) {}
 
         /**

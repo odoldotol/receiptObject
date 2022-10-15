@@ -68,7 +68,7 @@ export = function(
 ): {
     receipt: Receipt,
     failures: any[],
-    permits: {items, receiptInfo, shopInfo, taxSummary, amountSummary}
+    permits: {items, receiptInfo, shopInfo, taxSummary/*, amountSummary*/}
 } {
 
     const {textAnnotations, fullTextAnnotationPlusStudy, failures} = googleVisionAnnoInspectorPipe(annoRes);
@@ -79,8 +79,8 @@ export = function(
         items: true,
         receiptInfo: true,
         shopInfo: true,
-        taxSummary: true,
-        amountSummary: true
+        taxSummary: true/*,
+        amountSummary: true*/
     }
 
     // 영수증 객체 생성! (여기 단계에서는 절대 실패하면 안됨)
@@ -109,14 +109,14 @@ export = function(
         ({
             textAnnotationsRangeX,
             textAnnotationsRangeY
-        }=getTextAnnotationsRanges(textAnnotations));
+        } = getTextAnnotationsRanges(textAnnotations));
     } catch(error) {
         failures.push(error.stack);
         permits.items = false;
         permits.receiptInfo = false;
         permits.shopInfo = false;
         permits.taxSummary = false;
-        permits.amountSummary = false;
+        // permits.amountSummary = false;
     };
 
     // 상품명 단가 수량 금액 라인 pin 찾기
@@ -152,16 +152,18 @@ export = function(
     } catch (error) {
         failures.push(error.stack);
         permits.taxSummary = false;
-        permits.amountSummary = false;
+        // permits.amountSummary = false;
     };
     
-    // amountSummary 하인 Pin 찾기
+    // amountSummary 하안 Pin 찾기
+    /*
     try {
         // '구매금액'
     } catch (error) {
         failures.push(error.stack);
-        permits.amountSummary = false;
+        // permits.amountSummary = false;
     };
+    */
 
     // items
     if (permits.items) {
@@ -343,6 +345,7 @@ export = function(
     };
 
     // amountSummary
+    /*
     if (permits.amountSummary) {
         try {
             // 구현하기
@@ -351,6 +354,7 @@ export = function(
             permits.amountSummary = false;
         };
     };
+    */
 
     if (permits.items) {
         receipt.complete();

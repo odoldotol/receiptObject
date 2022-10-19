@@ -32,7 +32,7 @@
  * 우선 * 이나 . 로 찾는건 처리를 하지만 그외 이상하게 찾거나 못찾는것은 그대로 방치중임
  */
 
-import { MultipartBodyDto } from 'src/recipt-to-sheet/dto/multipartBody.dto';
+import { MultipartBodyDto } from 'src/receipt-to-sheet/dto/multipartBody.dto';
 import {ReceiptItem, Discount, ItemReadFromReceipt, Receipt, Provider} from './define.V0.0.1';
 /**
  * 

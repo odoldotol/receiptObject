@@ -51,7 +51,7 @@
  * taxSummary 로 부터 어느정도 보정,정확도향상 기대됨
  */
 
-import { MultipartBodyDto } from 'src/recipt-to-sheet/dto/multipartBody.dto';
+import { MultipartBodyDto } from 'src/receipt-to-sheet/dto/multipartBody.dto';
 import { Receipt } from './define.V0.1.1';
 /**
  * 

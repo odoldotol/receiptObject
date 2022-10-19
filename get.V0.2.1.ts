@@ -53,7 +53,7 @@
  */
 
 import { google } from '@google-cloud/vision/build/protos/protos';
-import { MultipartBodyDto } from 'src/recipt-to-sheet/dto/multipartBody.dto';
+import { MultipartBodyDto } from 'src/receipt-to-sheet/dto/multipartBody.dto';
 import { Receipt } from './define.V0.1.1';
 import googleVisionAnnoInspectorPipe from './googleVisionAnnoPipe/inspector.V0.0.1';
 
@@ -71,7 +71,7 @@ export = function(
     permits: {items, receiptInfo, shopInfo, taxSummary/*, amountSummary*/}
 } {
 
-    const {textAnnotations, fullTextAnnotationPlusStudy, failures} = googleVisionAnnoInspectorPipe(annoRes);
+    const {textAnnotations, fullTextAnnotationPlusStudy, failures} = googleVisionAnnoInspectorPipe(annoRes); // 파이프 돌릴떄의 발견되는 예외도 보고 받을수 있도록 수정해야함
     const {emailAddress, receiptStyle} = multipartBody
 
     //

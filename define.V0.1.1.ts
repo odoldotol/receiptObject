@@ -28,7 +28,7 @@ class Receipt {
      * #### itemArray 완성
      * 4개의 배열을 인자로 받음 (당연히 길이가 같아야함)
      */
-    readReceiptItems(productNameArr: Array<string|undefined>, unitPriceArr: Array<number|undefined>, quantityArr: Array<number|undefined>, amountArr: Array<number|undefined>) {
+    readReceiptItems(productNameArr: Array<string|undefined>, unitPriceArr: Array<string|undefined>, quantityArr: Array<string|undefined>, amountArr: Array<string|undefined>) {
         const receiptItemArray = [];
         productNameArr.forEach((productName, idx) => {
             // Discount 상품명 발견하면 Discount 객체 만들어서 바로 전 아이템에 넣어주기
@@ -214,9 +214,9 @@ class Receipt {
 
             constructor(
                 public productName: string,
-                unitPrice: number,
-                quantity: number,
-                amount: number,
+                unitPrice: string,
+                quantity: string,
+                amount: string,
                 public taxExemption?: boolean,
             ) {
                 this.unitPrice = Number(unitPrice)
@@ -233,8 +233,8 @@ class Receipt {
 
                 constructor(
                     public name: string,
-                    amount: number,
-                    code?: number
+                    amount: string,
+                    code?: string
                 ) {
                     this.amount = Number(amount)
                     if (code !== undefined) this.code = Number(code)

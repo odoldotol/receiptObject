@@ -1,22 +1,26 @@
-export = function(annotateResult) {
+import { google } from "@google-cloud/vision/build/protos/protos";
+
+// 현재 fullTextAnnotationPlusStudy 안에 추가된 text 들을 타입스크립트가 모르고있음
+
+export = function(annotateResult: google.cloud.vision.v1.IAnnotateImageResponse[]) {
     
     const textAnnotations = annotateResult[0].textAnnotations;
 
-    const failures = [];
+    const failures: string[] = [];
 
     // textAnnotations 검사
     try {
         textAnnotationsInspector(textAnnotations);
-    } catch (error) {
+    } catch (error: any) {
         failures.push(error.stack);
     }
 
     // fullTextAnnotation 검사하며 fullTextAnnotationPlusStudy 만들기
     // fullTextAnnotationPlusStudy 은 pages, blocks, paragraphs, words, symbols 각각이 하위요소의 text 내용을 전부 합친 문자열을 text(Study) 로 가진다.
-    let fullTextAnnotationPlusStudy = null
+    let fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation = null;
     try {
         fullTextAnnotationPlusStudy = fullTextAnnotationInspector(annotateResult[0].fullTextAnnotation);
-    } catch (error) {
+    } catch (error: any) {
         failures.push(error.stack);
     }
 
@@ -27,8 +31,8 @@ export = function(annotateResult) {
  * textAnnotations 예외 찾기.
  * 가정 검증 & 분석도구역할.
  */
-function textAnnotationsInspector(textAnnotations) {
-    let result = []
+function textAnnotationsInspector(textAnnotations: google.cloud.vision.v1.IEntityAnnotation[]) {
+    const result: object[] = []
     textAnnotations.forEach((textAnno, idx) => {
         if (
             textAnno.locations.length !== 0 ||
@@ -57,7 +61,7 @@ function textAnnotationsInspector(textAnnotations) {
  * 가정 검증 & 분석도구역할.
  * fullTextAnnotationPlusStudy 를 만들어 반환해야함.
  */
-function fullTextAnnotationInspector(fullTextAnnotation) {
+function fullTextAnnotationInspector(fullTextAnnotation: google.cloud.vision.v1.ITextAnnotation) {
     let fullTextAnnotationPlusStudy = fullTextAnnotation;
     let result = [];
     fullTextAnnotation.pages.forEach((page, pageIdx) => {
@@ -140,22 +144,22 @@ function fullTextAnnotationInspector(fullTextAnnotation) {
                     });
                     // fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx].paragraphs[paragraphIdx].words[wordIdx].study = {}
                     // fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx].paragraphs[paragraphIdx].words[wordIdx].study.text = wordText
-                    fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx].paragraphs[paragraphIdx].words[wordIdx].text = wordText
+                    fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx].paragraphs[paragraphIdx].words[wordIdx]["text"] = wordText
                     paragraphText += wordText
                 });
                 // fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx].paragraphs[paragraphIdx].study = {}
                 // fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx].paragraphs[paragraphIdx].study.text = paragraphText
-                fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx].paragraphs[paragraphIdx].text = paragraphText
+                fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx].paragraphs[paragraphIdx]["text"] = paragraphText
                 blockText += paragraphText
             });
             // fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx].study = {}
             // fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx].study.text = blockText
-            fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx].text = blockText
+            fullTextAnnotationPlusStudy.pages[pageIdx].blocks[blockIdx]["text"] = blockText
             pageText += blockText
         });
         // fullTextAnnotationPlusStudy.pages[pageIdx].study = {}
         // fullTextAnnotationPlusStudy.pages[pageIdx].study.text = pageText
-        fullTextAnnotationPlusStudy.pages[pageIdx].text = pageText
+        fullTextAnnotationPlusStudy.pages[pageIdx]["text"] = pageText
     });
     if (result.length === 0) {
         // console.log("fullTextAnnotation 예외 없음")

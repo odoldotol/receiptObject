@@ -102,7 +102,7 @@ export = function(annotateResult: {textAnnotations, fullTextAnnotationPlusStudy,
             // 내부에서 독립적으로 결과물을 뱉도록 나눌 필요가 있음. 일단은 전부 실패거나 성공임.
         } = findItemRangeUntilUnitPrice(textAnnotations, fullTextAnnotationPlusStudy));
 
-    } catch (error) {
+    } catch (error: any) {
         failures.push(error.stack)
         permits.items = false
         permits.receiptInfo = false
@@ -134,7 +134,7 @@ export = function(annotateResult: {textAnnotations, fullTextAnnotationPlusStudy,
                     {includeWords: true, word: 1}
                 )
             );
-        } catch (error) {
+        } catch (error: any) {
             failures.push(error.stack)
             permits.items = false
         };
@@ -149,7 +149,7 @@ export = function(annotateResult: {textAnnotations, fullTextAnnotationPlusStudy,
             receiptInfoRangeY,
             false
         );
-    } catch (error) {
+    } catch (error: any) {
         failures.push(error.stack)
         permits.receiptInfo = false
     };
@@ -165,7 +165,7 @@ export = function(annotateResult: {textAnnotations, fullTextAnnotationPlusStudy,
                 false
             )
         );
-    } catch (error) {
+    } catch (error: any) {
         failures.push(error.stack)
         permits.shopInfo = false
     };
@@ -182,7 +182,7 @@ export = function(annotateResult: {textAnnotations, fullTextAnnotationPlusStudy,
                 {includeWords: true}
             )
         );
-    } catch (error) {
+    } catch (error: any) {
         failures.push(error.stack)
         permits.taxSummary = false
     };
@@ -238,7 +238,7 @@ export = function(annotateResult: {textAnnotations, fullTextAnnotationPlusStudy,
             // receipt.itemArray 완성
             receipt.readReceiptItems(productNameArr, unitPriceArr, quantityArr, amountArr);
 
-        } catch (error) {
+        } catch (error: any) {
             failures.push(error.stack)
             permits.items = false
         };
@@ -253,7 +253,7 @@ export = function(annotateResult: {textAnnotations, fullTextAnnotationPlusStudy,
         try {
             // ReceiptInfoGroup에서 ReceiptInfo 추출하고 영수증 객체에 입력
             receipt.readReceiptInfo(getReceiptInfoFromGroup(receiptInfoGroup));
-        } catch (error) {
+        } catch (error: any) {
             failures.push(error.stack)
             permits.receiptInfo = false
         };
@@ -263,7 +263,7 @@ export = function(annotateResult: {textAnnotations, fullTextAnnotationPlusStudy,
         try {
             // ShopInfoGroup에서 ShopInfo 추출하고 영수증 갹체에 입력
             receipt.readShopInfo(getShopInfoFromGroup(shopInfoGroup));
-        } catch (error) {
+        } catch (error: any) {
             failures.push(error.stack)
             permits.shopInfo = false
         };
@@ -273,7 +273,7 @@ export = function(annotateResult: {textAnnotations, fullTextAnnotationPlusStudy,
         try {
             // TaxSummaryNumberGroup에서 TaxSummary 추출하고 영수증 객체에 입력
             receipt.readTaxSummary(getTaxSummaryFromGroup(taxSummaryNumberGroup, taxSummaryRangeY[2]));
-        } catch (error) {
+        } catch (error: any) {
             failures.push(error.stack)
             permits.taxSummary = false
         };

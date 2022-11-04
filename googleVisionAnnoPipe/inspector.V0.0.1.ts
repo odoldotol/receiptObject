@@ -2,7 +2,7 @@ import { google } from "@google-cloud/vision/build/protos/protos";
 
 // 현재 fullTextAnnotationPlusStudy 안에 추가된 text 들을 타입스크립트가 모르고있음
 
-export = function(annotateResult: google.cloud.vision.v1.IAnnotateImageResponse[]) {
+export default (annotateResult: google.cloud.vision.v1.IAnnotateImageResponse[]) => {
     
     const textAnnotations = annotateResult[0].textAnnotations;
 
@@ -31,7 +31,7 @@ export = function(annotateResult: google.cloud.vision.v1.IAnnotateImageResponse[
  * textAnnotations 예외 찾기.
  * 가정 검증 & 분석도구역할.
  */
-function textAnnotationsInspector(textAnnotations: google.cloud.vision.v1.IEntityAnnotation[]) {
+const textAnnotationsInspector = (textAnnotations: google.cloud.vision.v1.IEntityAnnotation[]) => {
     const result: object[] = []
     textAnnotations.forEach((textAnno, idx) => {
         if (
@@ -61,7 +61,7 @@ function textAnnotationsInspector(textAnnotations: google.cloud.vision.v1.IEntit
  * 가정 검증 & 분석도구역할.
  * fullTextAnnotationPlusStudy 를 만들어 반환해야함.
  */
-function fullTextAnnotationInspector(fullTextAnnotation: google.cloud.vision.v1.ITextAnnotation) {
+const fullTextAnnotationInspector = (fullTextAnnotation: google.cloud.vision.v1.ITextAnnotation) => {
     let fullTextAnnotationPlusStudy = fullTextAnnotation;
     let result = [];
     fullTextAnnotation.pages.forEach((page, pageIdx) => {

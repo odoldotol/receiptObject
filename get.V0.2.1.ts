@@ -62,11 +62,11 @@ type FTAnnoObj = [idx, google.cloud.vision.v1.ISymbol | google.cloud.vision.v1.I
 /**
  * 
  */
-export = function(
+export default (
     annoRes: google.cloud.vision.v1.IAnnotateImageResponse[],
     multipartBody: MultipartBodyDto,
     imageUri?: string
-) {
+) => {
 
     const {textAnnotations, fullTextAnnotationPlusStudy, failures} = googleVisionAnnoInspectorPipe(annoRes); // 파이프 돌릴떄의 발견되는 예외도 보고 받을수 있도록 수정해야함
     const {emailAddress, receiptStyle} = multipartBody
@@ -376,7 +376,7 @@ class idx {
 /**
  * #### 정규표현식과 일치하는 요소 찾기 
  */
-function getFulltextAnnoObjByReg(fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation, reg: RegExp) {
+const getFulltextAnnoObjByReg = (fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation, reg: RegExp) => {
     let result: FTAnnoObj[] = []
     if (reg.test(fullTextAnnotationPlusStudy.text)) {
         let isInPage = false
@@ -440,7 +440,7 @@ function getFulltextAnnoObjByReg(fullTextAnnotationPlusStudy: google.cloud.visio
 /**
  * #### textAnnotationsRange 찾기
  */
-function getTextAnnotationsRanges(textAnnotations: google.cloud.vision.v1.IEntityAnnotation[]) {
+const getTextAnnotationsRanges = (textAnnotations: google.cloud.vision.v1.IEntityAnnotation[]) => {
     const textAnnotationsMinX = Math.min(...getXorYArr("x", undefined, textAnnotations[0]))
     const textAnnotationsMaxX = Math.max(...getXorYArr("x", undefined, textAnnotations[0]))
     const textAnnotationsMinY = Math.min(...getXorYArr("x", undefined, textAnnotations[0]))
@@ -454,7 +454,7 @@ function getTextAnnotationsRanges(textAnnotations: google.cloud.vision.v1.IEntit
 /**
  * #### 상품명 단가 수량 금액 라인 Pin 찾기
  */
-function getPnUpQtAmPins(fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation) {
+ const getPnUpQtAmPins = (fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation) => {
     // 1. 상품명 단가 수량 금액 라인 찾기 // 오타로 못찾으면 오타로도 다 찾도록 추가해줘도됨. 오타가 나봐야 뭐
     const productNamePinGroup = getFulltextAnnoObjByReg(fullTextAnnotationPlusStudy, /상품명/)
     const unitPricePinGroup = getFulltextAnnoObjByReg(fullTextAnnotationPlusStudy, /단가/)
@@ -520,7 +520,7 @@ function getPnUpQtAmPins(fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITe
  * #### items 하단 Pin (=taxSummary 상단 Pin) 찾기
  * - 정확히 하나만 찾아냈다는 가정
  */
-function getItemsYBottomPin(fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation) {
+const getItemsYBottomPin = (fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation) => {
     let itemsYBottomPin: FTAnnoObj[]
     const taxExemptionMsg = getFulltextAnnoObjByReg(fullTextAnnotationPlusStudy, /표시 상품은 부가세 면세품목입니다/)
     if (taxExemptionMsg === null) {
@@ -538,7 +538,7 @@ function getItemsYBottomPin(fullTextAnnotationPlusStudy: google.cloud.vision.v1.
  * - taxSummaryStyle 또한 정의함
  * - 정확히 하나만 찾아냈다는 가정
  */
-function getTaxSummaryYBottomPin(fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation) {
+const getTaxSummaryYBottomPin = (fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation) => {
     let taxSummaryStyle: 0|1|2 = 0 // (0: 과세물품, 부가세, 면세물품 / 1: 과세물품, 부가세 / 2: 면세물품) // 아마도 2번 형식도 있겠지? 일단은 0,1 만 커버하게 구현하고 2은 발견되면 추가할것임.
     // '면세물품'의 Y최대값이 taxSummary하안선 // y 걸쳐진것까지 포함 (word까지 continue포함 옵션줘서)
     let taxSummaryYBottomPin = getFulltextAnnoObjByReg(fullTextAnnotationPlusStudy, /면\s*세\s*물\s*품/)[0]
@@ -552,7 +552,7 @@ function getTaxSummaryYBottomPin(fullTextAnnotationPlusStudy: google.cloud.visio
 /**
  * #### itemRangeY 찾기
  */
-function getItemRangeY(productNamePin: FTAnnoObj, unitPricePin: FTAnnoObj, quantityPin: FTAnnoObj, amountPin: FTAnnoObj, itemsYBottomPin: FTAnnoObj) {
+const getItemRangeY = (productNamePin: FTAnnoObj, unitPricePin: FTAnnoObj, quantityPin: FTAnnoObj, amountPin: FTAnnoObj, itemsYBottomPin: FTAnnoObj) => {
     const productNameYs = getXorYArr("y", productNamePin)
     const unitPriceYs = getXorYArr("y", unitPricePin)
     const quantityYs = getXorYArr("y", quantityPin)
@@ -568,7 +568,7 @@ function getItemRangeY(productNamePin: FTAnnoObj, unitPricePin: FTAnnoObj, quant
  * 
  * [textAnnotationsMinX, unuitPricePin 의 최소 X]
  */
-function getProductNameRangeX(unitPricePin: FTAnnoObj, textAnnotationsRangeX: number[]) {
+const getProductNameRangeX = (unitPricePin: FTAnnoObj, textAnnotationsRangeX: number[]) => {
     const unitPriceMinX = Math.min(...getXorYArr("x", unitPricePin));
     return [textAnnotationsRangeX[0], unitPriceMinX];
 };
@@ -578,7 +578,7 @@ function getProductNameRangeX(unitPricePin: FTAnnoObj, textAnnotationsRangeX: nu
  * 
  * [단가Pin 중간, 수량Pin 최소값]
  */
-function getUnitPriceRangeX(unitPricePin: FTAnnoObj, quantityPin: FTAnnoObj) {
+const getUnitPriceRangeX = (unitPricePin: FTAnnoObj, quantityPin: FTAnnoObj) => {
     const unitPriceAverageX = calAverageXorY(unitPricePin, "x");
     const quantityMinX = Math.min(...getXorYArr("x", quantityPin));
     return [unitPriceAverageX, quantityMinX]
@@ -587,7 +587,7 @@ function getUnitPriceRangeX(unitPricePin: FTAnnoObj, quantityPin: FTAnnoObj) {
 /**
  * #### word 레벨 그릅내에 숫자만 있지 않은것은 제거
  */
-function onlyDigitWordGroupFilter(group: FTAnnoObj[]) {
+const onlyDigitWordGroupFilter = (group: FTAnnoObj[]) => {
     return group.filter(ele => {
         if (/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(ele[1]["text"]) || /[a-zA-Z]/.test(ele[1]["text"])) {
             return false
@@ -601,7 +601,7 @@ function onlyDigitWordGroupFilter(group: FTAnnoObj[]) {
 /**
  * #### 인자 두개가 워드레벨 그룹일때, 첫번째인자 - 두번쨰인자 (차집합)
  */
-function wordGroupRelativeComplementSet(groupA: FTAnnoObj[], groupB: FTAnnoObj[]) {
+const wordGroupRelativeComplementSet = (groupA: FTAnnoObj[], groupB: FTAnnoObj[]) => {
     let result = groupA
     groupB.forEach((eleB) => {
         const {pageIdx, blockIdx, paragraphIdx, wordIdx} = eleB[0]
@@ -625,7 +625,7 @@ function wordGroupRelativeComplementSet(groupA: FTAnnoObj[], groupB: FTAnnoObj[]
 /**
  * #### receiptInfo 범위 찾기
  */
-function getReceiptInfoRanges(productNamePin: FTAnnoObj, unitPricePin: FTAnnoObj, quantityPin: FTAnnoObj, amountPin: FTAnnoObj, fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation) {
+const getReceiptInfoRanges = (productNamePin: FTAnnoObj, unitPricePin: FTAnnoObj, quantityPin: FTAnnoObj, amountPin: FTAnnoObj, fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation) => {
     const productNameYs = getXorYArr("y", productNamePin)
     const unitPriceYs = getXorYArr("y", unitPricePin)
     const quantityYs = getXorYArr("y", quantityPin)
@@ -669,7 +669,7 @@ function getReceiptInfoRanges(productNamePin: FTAnnoObj, unitPricePin: FTAnnoObj
 /**
  * #### shopInfo 범위 찾기
  */
-function getShopInfoRanges(receiptInfoRangeY: number[], fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation, textAnnotationsRangeY: number[]) {
+const getShopInfoRanges = (receiptInfoRangeY: number[], fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation, textAnnotationsRangeY: number[]) => {
     let shopInfoMaxY = receiptInfoRangeY[0];
     // 아래 각각 요소의 배열마다 Y의 평균값(=>최대값)중 최소값을 구하고 그 최소값이 shopInfoMaxY 보다 작으면 shopInfoMaxY 에 할당
     // 위 평균값을 최대값으로 수정하면 쓸때없는게 간혹 포함되긴하는데 여기에서는 누락을 막는것만 신경쓰면 되서 괜찮음
@@ -699,7 +699,7 @@ function getShopInfoRanges(receiptInfoRangeY: number[], fullTextAnnotationPlusSt
 /**
  * #### 부가세 부분 영역 찾기
  */
- function findTaxSummaryRanges(textAnnotationsRangeX: number[], itemsYBottomPin: FTAnnoObj, taxSummaryYBottomPin: FTAnnoObj) {
+ const findTaxSummaryRanges = (textAnnotationsRangeX: number[], itemsYBottomPin: FTAnnoObj, taxSummaryYBottomPin: FTAnnoObj) => {
     const taxSummaryMaxY = Math.max(...getXorYArr("y", taxSummaryYBottomPin))
     const taxSummaryMinY = getXorYArr("y", itemsYBottomPin).sort((a, b) => a - b)[1]
     const taxSummaryRangeY = [taxSummaryMinY, taxSummaryMaxY]
@@ -712,7 +712,7 @@ function getShopInfoRanges(receiptInfoRangeY: number[], fullTextAnnotationPlusSt
  * 
  * 1. 수량 금액 가로축 범위 결정하기.
  */
-function findItemRangeQuantityAmount(textAnnotationsRangeX: number[], quantity: FTAnnoObj, amount: FTAnnoObj, unitPriceGroup: FTAnnoObj[]) {
+const findItemRangeQuantityAmount = (textAnnotationsRangeX: number[], quantity: FTAnnoObj, amount: FTAnnoObj, unitPriceGroup: FTAnnoObj[]) => {
 
     const unitPriceGroupMaxX = Math.max( // 단가 그룹의 맨위와 맨밑의 최대 x값
         Math.max(...getXorYArr("x", unitPriceGroup[0])),
@@ -726,11 +726,11 @@ function findItemRangeQuantityAmount(textAnnotationsRangeX: number[], quantity: 
     return {quantityRangeX, amountRangeX}
 };
 
-function calAverageXorY(fullTextAnooObj: FTAnnoObj, coordinate:"x"|"y") {
+const calAverageXorY = (fullTextAnooObj: FTAnnoObj, coordinate:"x"|"y") => {
     return fullTextAnooObj[1].boundingBox.vertices.reduce((acc, cur) => acc + cur[coordinate], 0) / 4
 };
 
-function getXorYArr(coordinate:"x"|"y", fTAnnoObj: FTAnnoObj, textAnnoObj?: google.cloud.vision.v1.IEntityAnnotation) {
+const getXorYArr = (coordinate:"x"|"y", fTAnnoObj: FTAnnoObj, textAnnoObj?: google.cloud.vision.v1.IEntityAnnotation) => {
     if (fTAnnoObj) {
         return fTAnnoObj[1].boundingBox.vertices.map((v) => v[coordinate])
     }
@@ -748,14 +748,49 @@ function getXorYArr(coordinate:"x"|"y", fTAnnoObj: FTAnnoObj, textAnnoObj?: goog
  * @includeSymbols true: symbol 레벨까지 탐섹 허가
  * @continueOptions {includeWords:bool <워드레벨에서 걸쳐진것 포함여부>, word:0|1, includeSymbols:boo <심볼레벨에서 걸쳐진것 포함여부>, symbol:0|1} < 0:x만 완전포함조건 1:y만 완전포함조건 >
  */
-function getFulltextAnnoObjByRange(
+const getFulltextAnnoObjByRange = (
     fullTextAnnotationPlusStudy: google.cloud.vision.v1.ITextAnnotation,
     rangeX/*[overX, underX]*/: number[],
     rangeY/*[overY, underY]*/: number[],
     includeSymbols: boolean,
     continueOptions?: {includeWords?: boolean, word?:0|1, includeSymbols?:boolean, symbol?:0|1} // 0: x만 완전포함조건 1: y만 완전포함조건
-) {
+) => {
     let result: FTAnnoObj[] = [];
+
+    /**
+     * 완전 속해있으면 true, 완전 분리되어있으면 false, 걸쳐있으면 "continue" 반환
+     */
+    const compareVertices = (vertices: google.cloud.vision.v1.IVertex[]) => {
+
+        const compareRange = (min: number, max: number, range: number[]) => {
+            if ( // 완전 속해있음
+                min > range[0] && max < range[1]
+            ) {
+                return true
+            }
+            else if ( // 완전 분리되어있음
+                (min <= range[0] && max <= range[0]) || (max >= range[1] && min >= range[1])
+            ) {
+                return false
+            }
+            else {
+                return "continue"
+            }
+        };
+
+        const verticesX = []
+        const verticesY = []
+        vertices.forEach((vertex) => {
+            verticesX.push(vertex.x)
+            verticesY.push(vertex.y)
+        })
+        const maxX = Math.max(...verticesX)
+        const minX = Math.min(...verticesX)
+        const maxY = Math.max(...verticesY)
+        const minY = Math.min(...verticesY)
+
+        return [compareRange(minX, maxX, rangeX), compareRange(minY, maxY, rangeY)]
+    };
 
     fullTextAnnotationPlusStudy.pages[0].blocks.forEach((block, blockIndex) => {
         const compare = compareVertices(block.boundingBox.vertices)
@@ -823,40 +858,6 @@ function getFulltextAnnoObjByRange(
         }
     });
     return result;
-
-    /**
-     * 완전 속해있으면 true, 완전 분리되어있으면 false, 걸쳐있으면 "continue" 반환
- */
-    function compareVertices(vertices: google.cloud.vision.v1.IVertex[]) {
-        const verticesX = []
-        const verticesY = []
-        vertices.forEach((vertex) => {
-            verticesX.push(vertex.x)
-            verticesY.push(vertex.y)
-        })
-        const maxX = Math.max(...verticesX)
-        const minX = Math.min(...verticesX)
-        const maxY = Math.max(...verticesY)
-        const minY = Math.min(...verticesY)
-
-        return [compareRange(minX, maxX, rangeX), compareRange(minY, maxY, rangeY)]
-
-        function compareRange(min: number, max: number, range: number[]) {
-            if ( // 완전 속해있음
-                min > range[0] && max < range[1]
-            ) {
-                return true
-            }
-            else if ( // 완전 분리되어있음
-                (min <= range[0] && max <= range[0]) || (max >= range[1] && min >= range[1])
-            ) {
-                return false
-            }
-            else {
-                return "continue"
-            }
-        }
-    };
 };
 
 /**
@@ -864,7 +865,7 @@ function getFulltextAnnoObjByRange(
  * 
  * - 재귀로 수정하든 중복코드 제거필요
  */
-function groupDestructuring(group:Array<[idx,any,string?]>) {
+const groupDestructuring = (group:Array<[idx,any,string?]>) => {
     let result: [idx, google.cloud.vision.v1.IWord, string?][] = [];
     group.forEach((ele) => {
         // 워드레벨 이하인경우 그대로 반환하고 아닌경우 내부 탐색
@@ -888,7 +889,7 @@ function groupDestructuring(group:Array<[idx,any,string?]>) {
         };
     });
 
-    function paragraghsDestructuring(words: google.cloud.vision.v1.IWord[], idxObj:idx): [idx, google.cloud.vision.v1.IWord][] {
+    const paragraghsDestructuring = (words: google.cloud.vision.v1.IWord[], idxObj:idx): [idx, google.cloud.vision.v1.IWord][] => {
         return words.map((word, wordIdx) => {
             return [new idx(idxObj.pageIdx, idxObj.blockIdx, idxObj.paragraphIdx, wordIdx), word]
         });
@@ -899,7 +900,7 @@ function groupDestructuring(group:Array<[idx,any,string?]>) {
 /**
  * #### y축 기준 정렬
  */
-function sortGroupAscByY(group: FTAnnoObj[]) {
+const sortGroupAscByY = (group: FTAnnoObj[]) => {
     return group.sort((a,b) => {
         const aVerticesY = a[1].boundingBox.vertices.map((v) => v.y)
         const bVerticesY = b[1].boundingBox.vertices.map((v) => v.y)
@@ -916,51 +917,12 @@ function sortGroupAscByY(group: FTAnnoObj[]) {
  * * 카드할인 : 단가, 수량.
  * * 쿠폰할인 : 수량.
  */
-function getTextArraysFromGroups(productNameGroup: FTAnnoObj[], unitPriceGroup: FTAnnoObj[], quantityGroup: FTAnnoObj[], amountGroup: FTAnnoObj[]) {
-
-    // 각 Group 순회하며 Arr 만들기 (\n 기준으로 split 해서 배열로 만들어준다.)
-    const productNameArray = makeProductNameArrFromGroup(productNameGroup)
-        .filter((ele) => /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(ele) || /[a-zA-Z]/.test(ele)) // 숫자만 있는 행 제거
-    const unitPriceArray = makeArrFromGroup(unitPriceGroup);
-    const quantityArray = makeArrFromGroup(quantityGroup);
-    const amountArray = makeAmountArrFromGroup(amountGroup);
-
-    // 상품명 arr 에서 특정상품명이 발견되는 index 로 단가 수량 arr 에 undefined 삽입
-    productNameArray.forEach((productName, index) => {
-        if (productName.includes("행사할인")) {
-            unitPriceArray.splice(index, 0, undefined);
-            quantityArray.splice(index, 0, undefined);
-        }
-        else if (productName.includes("쿠폰할인")) {
-            quantityArray.splice(index, 0, undefined);
-        }
-        else if (productName.includes("카드할인")) {
-            unitPriceArray.splice(index, 0, undefined);
-            quantityArray.splice(index, 0, undefined);
-        }
-    })
-
-    // console.log(productNameArray)
-    // console.log(unitPriceArray)
-    // console.log(quantityArray)
-    // console.log(amountArray)
-
-    // 4개의 배열의 길이가 모두 같으면 정상임. 정상이면 완성된 배열들 리턴
-    if (
-        productNameArray.length === unitPriceArray.length &&
-        unitPriceArray.length === quantityArray.length &&
-        quantityArray.length === amountArray.length
-    ) {
-        return {productNameArray, unitPriceArray, quantityArray, amountArray};
-    }
-    else {
-        throw new Error("Failed to make textArrays : length of arrays are not same.")
-    }
+const getTextArraysFromGroups = (productNameGroup: FTAnnoObj[], unitPriceGroup: FTAnnoObj[], quantityGroup: FTAnnoObj[], amountGroup: FTAnnoObj[]) => {
 
     /**
      * 기본적인 범용 툴
      */
-    function makeArrFromGroup(group: FTAnnoObj[]) {
+    const makeArrFromGroup = (group: FTAnnoObj[]) => {
         let arr: string[] = []
         group.forEach((item) => {
             item[1]["text"].split('\n').forEach((text: string) => {
@@ -981,7 +943,7 @@ function getTextArraysFromGroups(productNameGroup: FTAnnoObj[], unitPriceGroup: 
      * 
      * 중복코드 정리 필요
      */
-    function makeProductNameArrFromGroup(group: FTAnnoObj[]) {
+    const makeProductNameArrFromGroup = (group: FTAnnoObj[]) => {
         // 그룹 요소중에 word level 로 쪼개서 찾아진내용은 순서대로 이어붙인다음 \n 검사해야함.
         let arr: string[] = []
         let wordToParagraph: string[] = [] // disorderly 등장하는 word 를 재대로 이어붙이기위해 인덱스별 배열에 담아줌
@@ -1086,7 +1048,7 @@ function getTextArraysFromGroups(productNameGroup: FTAnnoObj[], unitPriceGroup: 
      * - symbol 레벨로 쪼개져 찾는경우 솔루션
      * - 중복 코드 제거하기
      */
-    function makeAmountArrFromGroup(group: FTAnnoObj[]) {
+    const makeAmountArrFromGroup = (group: FTAnnoObj[]) => {
         let arr: string[] = []
         let symbolToWord: string[] = []
         let tempPageIdx = NaN
@@ -1141,12 +1103,51 @@ function getTextArraysFromGroups(productNameGroup: FTAnnoObj[], unitPriceGroup: 
         }
         return arr
     };
+
+    // 각 Group 순회하며 Arr 만들기 (\n 기준으로 split 해서 배열로 만들어준다.)
+    const productNameArray = makeProductNameArrFromGroup(productNameGroup)
+    .filter((ele) => /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(ele) || /[a-zA-Z]/.test(ele)) // 숫자만 있는 행 제거
+    const unitPriceArray = makeArrFromGroup(unitPriceGroup);
+    const quantityArray = makeArrFromGroup(quantityGroup);
+    const amountArray = makeAmountArrFromGroup(amountGroup);
+
+    // 상품명 arr 에서 특정상품명이 발견되는 index 로 단가 수량 arr 에 undefined 삽입
+    productNameArray.forEach((productName, index) => {
+        if (productName.includes("행사할인")) {
+            unitPriceArray.splice(index, 0, undefined);
+            quantityArray.splice(index, 0, undefined);
+        }
+        else if (productName.includes("쿠폰할인")) {
+            quantityArray.splice(index, 0, undefined);
+        }
+        else if (productName.includes("카드할인")) {
+            unitPriceArray.splice(index, 0, undefined);
+            quantityArray.splice(index, 0, undefined);
+        }
+    })
+
+    // console.log(productNameArray)
+    // console.log(unitPriceArray)
+    // console.log(quantityArray)
+    // console.log(amountArray)
+
+    // 4개의 배열의 길이가 모두 같으면 정상임. 정상이면 완성된 배열들 리턴
+    if (
+        productNameArray.length === unitPriceArray.length &&
+        unitPriceArray.length === quantityArray.length &&
+        quantityArray.length === amountArray.length
+    ) {
+        return {productNameArray, unitPriceArray, quantityArray, amountArray};
+    }
+    else {
+        throw new Error("Failed to make textArrays : length of arrays are not same.")
+    };
 };
 
 /**
  * #### 인자로 받은 배열의 요소가 숫자 두개로 시작하면 그 숫자 두개를 제거
  */
-function deleteStartingTwoNumbersEachEleInArr(arr: string[]) {
+const deleteStartingTwoNumbersEachEleInArr = (arr: string[]) => {
     return arr.map((ele) => {
         return ele.replace(/^[0-9]{2}/, '')
     })
@@ -1155,7 +1156,7 @@ function deleteStartingTwoNumbersEachEleInArr(arr: string[]) {
 /**
  * #### 인자로 받은 배열의 요소가 공백으로 시작하거나 공백으로 끝나면 그 공백을 모두 제거
  */
-function deleteSpacesEachEleOfFrontAndBackInArr(arr: string[]) {
+const deleteSpacesEachEleOfFrontAndBackInArr = (arr: string[]) => {
     return arr.map((ele) => {
         if (ele === undefined) {
             return undefined
@@ -1169,7 +1170,7 @@ function deleteSpacesEachEleOfFrontAndBackInArr(arr: string[]) {
  * 
  * - 쉼표를 포인트(.)로 찾아버린것 제거
  */
-function deleteAllCommaEachEleInArr(arr: string[]) {
+const deleteAllCommaEachEleInArr = (arr: string[]) => {
     return arr.map((ele) => {
         if (ele === undefined) {
             return undefined
@@ -1183,7 +1184,7 @@ function deleteAllCommaEachEleInArr(arr: string[]) {
  * 
  * - '-' 는 살려야함
  */
-function deleteAllNotNumberEachEleInArr(arr: string[]) {
+const deleteAllNotNumberEachEleInArr = (arr: string[]) => {
     return arr.map((ele) => {
         if (ele === undefined) {
             return undefined
@@ -1198,7 +1199,7 @@ function deleteAllNotNumberEachEleInArr(arr: string[]) {
  * - 일단은 시간정보만 처리함
  * - 타임존 보정
  */
-function getReceiptInfoFromGroup(receiptInfoGroup: FTAnnoObj[]) {
+const getReceiptInfoFromGroup = (receiptInfoGroup: FTAnnoObj[]) => {
     let date: RegExpExecArray = null
     let time: RegExpExecArray = null
     // let tm = null
@@ -1234,7 +1235,7 @@ function getReceiptInfoFromGroup(receiptInfoGroup: FTAnnoObj[]) {
  * 
  * 
  */
-function getShopInfoFromGroup(group: FTAnnoObj[]) {
+const getShopInfoFromGroup = (group: FTAnnoObj[]) => {
     const shopInfoSentenceArr = getSentenceArrFromGroup(group)
     let name: string
     let tel: string
@@ -1268,7 +1269,7 @@ function getShopInfoFromGroup(group: FTAnnoObj[]) {
 /**
  * 
  */
-function getTaxSummaryFromGroup(group: FTAnnoObj[], style: 0|1|2) {
+const getTaxSummaryFromGroup = (group: FTAnnoObj[], style: 0|1|2) => {
     const taxSummarySentenceArr = deleteAllNotNumberEachEleInArr(getSentenceArrFromGroup(group))
     let result: {
         taxProductAmount: string,
@@ -1295,7 +1296,7 @@ function getTaxSummaryFromGroup(group: FTAnnoObj[], style: 0|1|2) {
  * - 그릅의 최소 레벨이 word 인 경우까지만 처리가능. (symbol 은 추후 구현 예정) -> 그릅 핸들링하는 범용툴로 전환해서 다른곳에 적용할 예정
  * - 중복코드재거해
  */
-function getSentenceArrFromGroup(group: FTAnnoObj[]) {
+const getSentenceArrFromGroup = (group: FTAnnoObj[]) => {
     let arr: string[] = [];
     let wordToParagraph: string[] = [];
     let tempPageIdx = NaN;

@@ -443,8 +443,8 @@ const getFulltextAnnoObjByReg = (fullTextAnnotationPlusStudy: google.cloud.visio
 const getTextAnnotationsRanges = (textAnnotations: google.cloud.vision.v1.IEntityAnnotation[]) => {
     const textAnnotationsMinX = Math.min(...getXorYArr("x", undefined, textAnnotations[0]))
     const textAnnotationsMaxX = Math.max(...getXorYArr("x", undefined, textAnnotations[0]))
-    const textAnnotationsMinY = Math.min(...getXorYArr("x", undefined, textAnnotations[0]))
-    const textAnnotationsMaxY = Math.max(...getXorYArr("x", undefined, textAnnotations[0]))
+    const textAnnotationsMinY = Math.min(...getXorYArr("y", undefined, textAnnotations[0]))
+    const textAnnotationsMaxY = Math.max(...getXorYArr("y", undefined, textAnnotations[0]))
     const textAnnotationsRangeX = [textAnnotationsMinX-1, textAnnotationsMaxX+1]
     const textAnnotationsRangeY = [textAnnotationsMinY-1, textAnnotationsMaxY+1]
 

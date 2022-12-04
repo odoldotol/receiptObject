@@ -867,6 +867,11 @@ const getFulltextAnnoObjByRange = (
  */
 const groupDestructuring = (group:Array<[idx,any,string?]>) => {
     let result: [idx, google.cloud.vision.v1.IWord, string?][] = [];
+    const paragraghsDestructuring = (words: google.cloud.vision.v1.IWord[], idxObj:idx): [idx, google.cloud.vision.v1.IWord][] => {
+        return words.map((word, wordIdx) => {
+            return [new idx(idxObj.pageIdx, idxObj.blockIdx, idxObj.paragraphIdx, wordIdx), word]
+        });
+    };
     group.forEach((ele) => {
         // 워드레벨 이하인경우 그대로 반환하고 아닌경우 내부 탐색
         if (ele[0].wordIdx !== undefined) {
@@ -889,11 +894,6 @@ const groupDestructuring = (group:Array<[idx,any,string?]>) => {
         };
     });
 
-    const paragraghsDestructuring = (words: google.cloud.vision.v1.IWord[], idxObj:idx): [idx, google.cloud.vision.v1.IWord][] => {
-        return words.map((word, wordIdx) => {
-            return [new idx(idxObj.pageIdx, idxObj.blockIdx, idxObj.paragraphIdx, wordIdx), word]
-        });
-    };
     return result;
 };
 
